@@ -1,7 +1,3 @@
-
-
-from uuid import UUID
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.chat_threads.exceptions import ChatThreadNotFound

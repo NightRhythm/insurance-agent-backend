@@ -31,3 +31,15 @@ class ProductService:
             candidate_products.extend(products)
 
         return candidate_products
+
+    async def list_candidates(
+            self,
+            categories: list[str],
+            premium_min: Decimal | None,
+            limit_per_category: int,
+        ) -> list[Product]:
+            return await self.repository.find_candidates(
+                categories=categories,
+                premium_min=premium_min,
+                limit_per_category=limit_per_category,
+            )
