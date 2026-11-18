@@ -1,0 +1,18 @@
+
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.modules.chat_threads.models import ChatThread
+from app.modules.chat_threads.repository import ChatThreadRepository
+
+
+class ChatThreadService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+        self.repository = ChatThreadRepository(session=session)
+
+    async def add(self, user_id: int, title: str):
+        async with self.session.begin():
+            chat_thread = ChatThread(user_id = user_id, title = title)
+            await self.repository.add(chat_thread=chat_thread)
+            return chat_thread

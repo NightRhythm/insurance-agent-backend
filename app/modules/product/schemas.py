@@ -1,11 +1,10 @@
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict
+
+from app.common.schemas import BaseSchema
 
 
-class ProductResponse(BaseModel):
+class ProductResponse(BaseSchema):
     """保险产品响应结果"""
-
-    model_config = ConfigDict(from_attributes=True)
 
     id: int
     name: str
