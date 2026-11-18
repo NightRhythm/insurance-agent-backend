@@ -17,3 +17,9 @@ class ChatThreadRepository:
             select(ChatThread).where(ChatThread.user_id == user_id).order_by(ChatThread.updated_at.desc(), ChatThread.created_at.desc())
         )
         return threads.all()
+
+    async def required_owner(self, user_id: int, id: str) -> ChatThread | None:
+        """校验指定会话是否属于指定用户"""
+        return await self.session.scalar(
+            select(ChatThread).where(ChatThread.id == id and ChatThread.user_id == user_id)
+        )

@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import uvicorn
 
+from app.core.exceptions import ApplicationError
 from app.core.logging import configure_logging, get_logger
 from app.core.config import settings
 
@@ -48,6 +50,11 @@ async def healthy() -> dict[str, str]:
     logger.info("健康检测接口正常调用")
     return {"status": "ok"}
 
+# 统一处理异常信息
+@app.exception_handler(ApplicationError)
+def handle_exception(request: Request, exc: ApplicationError):
+    logger.error(f"处理异常，请求路径：{request.url}, 异常信息：{exc}")
+    return JSONResponse(status_code=exc.status_code, content={"code": exc.code, "message": exc.message})
 
 if __name__ == "__main__":
     uvicorn.run(
