@@ -38,3 +38,17 @@ async def rename(
     service: ChatThreadService = Depends(get_chat_thread_service)
 ):
     return await service.rename(user_id=user_id, id=thread_id, title=request.title)
+
+from fastapi import Response, status
+
+
+@router.delete("/{thread_id}", status_code=status.HTTP_204_NO_CONTENT,)
+async def delete_chat_thread(
+    thread_id: str,
+    user_id: Annotated[int, Header(alias="x-user-id")],
+    service: ChatThreadService = Depends(get_chat_thread_service),
+) -> Response:
+    """删除指定会话"""
+
+    await service.delete(thread_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

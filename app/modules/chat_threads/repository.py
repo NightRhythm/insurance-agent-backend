@@ -21,5 +21,8 @@ class ChatThreadRepository:
     async def required_owner(self, user_id: int, id: str) -> ChatThread | None:
         """校验指定会话是否属于指定用户"""
         return await self.session.scalar(
-            select(ChatThread).where(ChatThread.id == id and ChatThread.user_id == user_id)
+            select(ChatThread).where(ChatThread.id == id, ChatThread.user_id == user_id)
         )
+
+    async def delete(self, thread: ChatThread) -> None:
+        await self.session.delete(thread)

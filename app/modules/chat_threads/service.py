@@ -1,5 +1,7 @@
 
 
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.chat_threads.exceptions import ChatThreadNotFound
@@ -23,13 +25,25 @@ class ChatThreadService:
 
     async def rename(self, user_id: int, id: str, title: str):
         async with self.session.begin():
-            chat_thread = self.repository.required_owner(user_id=user_id, id=id)
+            chat_thread = await self.repository.required_owner(user_id=user_id, id=id)
             if chat_thread is None:
                 raise ChatThreadNotFound()
 
-            chat_thread.title = title # type: ignore
+            chat_thread.title = title
 
             await self.session.flush()
             await self.session.refresh(chat_thread)
 
             return chat_thread
+
+    async def delete(
+        self,
+        thread_id: str,
+        user_id: int,
+    ) -> None:
+        async with self.session.begin():
+            thread = await self.repository.required_owner(user_id=user_id, id=thread_id)
+            if thread is None:
+                raise ChatThreadNotFound
+
+            await self.repository.delete(thread)
