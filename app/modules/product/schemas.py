@@ -1,10 +1,12 @@
 from decimal import Decimal
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict
 
 
 class ProductResponse(BaseModel):
     """保险产品响应结果"""
-    
+
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     clause_name: str
