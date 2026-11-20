@@ -21,10 +21,12 @@ async def lifespan(app: FastAPI):
     logger.info("项目启动中，正在初始化...")
     from app.infra.database import check_database, close_database
     from app.infra.checkpointer import init_checkpointer, close_checkpointer
+    from app.agents.insurance_advisor import init_insurance_advisor
     try:
         # 1.导入数据库管理函数，完成初始化
         await check_database()
-        await init_checkpointer()
+        checkpointer = await init_checkpointer()
+        agent = await init_insurance_advisor(checkpointer=checkpointer)
 
         yield
     finally:
