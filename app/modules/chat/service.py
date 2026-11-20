@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+
+from fastapi.sse import ServerSentEvent
 from langchain_core.messages import HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +19,7 @@ class ChatService:
         self,
         user_id: int,
         request: ChatRequest,
-    ) -> str:
+    ) -> AsyncIterator[ServerSentEvent]:
         # 1.校验会话是否属于当前用户
         thread = await self.repository.required_owner(
             user_id,
@@ -25,14 +28,23 @@ class ChatService:
         if thread is None:
             raise ChatThreadNotFound
 
-        # 2.调用Agent
-        # 2.1.消息输入
-        _input = {"messages": [HumanMessage(content=request.message)]}
-        # 2.2.会话ID
-        config = {"configurable": {"thread_id": str(request.thread_id)}}
-        # 2.3.调用
-        result = await self.agent.ainvoke(_input, config) # type: ignore
+        # 2.校验通过后，调用Agent
 
-        # 3.取出最后一条AI消息
-        ai_message = result["messages"][-1]
-        return ai_message.content
+        # 2.1.准备Agent输入
+        _input = {"messages": [HumanMessage(content=request.message)]}
+        config = {"configurable": {"thread_id": str(request.thread_id)}}
+
+        # 2.2.使用v3协议获取异步事件流
+        stream = await self.agent.astream_events(
+            _input,
+            config, # type: ignore
+            version="v3",
+        ) # type: ignore
+
+        # 2.3.只读取消息中的文本增量
+        async with stream:
+            async for message in stream.messages:
+                async for text in message.text:
+                    yield ServerSentEvent(raw_data=text, event="message")
+            # 2.4.返回结束标识
+            yield ServerSentEvent(raw_data="[DONE]", event="done")
