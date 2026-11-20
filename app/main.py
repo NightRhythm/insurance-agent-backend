@@ -20,15 +20,19 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("项目启动中，正在初始化...")
     from app.infra.database import check_database, close_database
+    from app.infra.checkpointer import init_checkpointer, close_checkpointer
     try:
         # 1.导入数据库管理函数，完成初始化
         await check_database()
+        await init_checkpointer()
 
         yield
     finally:
         logger.info("应用关闭中...")
+        await close_checkpointer()
         # 2.关闭数据库连接池
         await close_database()
+        
 
 
 
@@ -57,9 +61,11 @@ def handle_exception(request: Request, exc: ApplicationError):
     return JSONResponse(status_code=exc.status_code, content={"code": exc.code, "message": exc.message})
 
 if __name__ == "__main__":
+    import sys
     uvicorn.run(
         "app.main:app",
         host=settings.app.host,
         port=settings.app.port,
-        reload=False
+        reload=False,
+        loop= "asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto",
     )
