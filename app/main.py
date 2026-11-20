@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
         # 1.导入数据库管理函数，完成初始化
         await check_database()
         checkpointer = await init_checkpointer()
-        agent = await init_insurance_advisor(checkpointer=checkpointer)
+        app.state.agent = await init_insurance_advisor(checkpointer=checkpointer)
 
         yield
     finally:
@@ -46,9 +46,11 @@ app = FastAPI(
 )
 
 from app.modules.product.router import router as product_router
-from app.modules.chat_threads.router import router as chat_thread_router
+from app.modules.chat_thread.router import router as chat_thread_router
+from app.modules.chat.router import router as chat_router
 app.include_router(product_router)
 app.include_router(chat_thread_router)
+app.include_router(chat_router)
 
 # 测试接口：健康检查
 @app.get("/healthy", summary="健康检测接口")

@@ -1,8 +1,10 @@
 
+from uuid import UUID
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.chat_threads.models import ChatThread
+from app.modules.chat_thread.models import ChatThread
 
 
 class ChatThreadRepository:
@@ -18,7 +20,7 @@ class ChatThreadRepository:
         )
         return threads.all()
 
-    async def required_owner(self, user_id: int, id: str) -> ChatThread | None:
+    async def required_owner(self, user_id: int, id: UUID) -> ChatThread | None:
         """校验指定会话是否属于指定用户"""
         return await self.session.scalar(
             select(ChatThread).where(ChatThread.id == id, ChatThread.user_id == user_id)

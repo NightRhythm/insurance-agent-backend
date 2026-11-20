@@ -1,13 +1,14 @@
 
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infra.database import get_session
-from app.modules.chat_threads.schemas import ChatThreadCreate, ChatThreadResponse
-from app.modules.chat_threads.service import ChatThreadService
+from app.modules.chat_thread.schemas import ChatThreadCreate, ChatThreadResponse
+from app.modules.chat_thread.service import ChatThreadService
 
 
 router = APIRouter(prefix="/api/v1/chat-threads", tags=["会话管理接口"])
@@ -44,7 +45,7 @@ from fastapi import Response, status
 
 @router.delete("/{thread_id}", status_code=status.HTTP_204_NO_CONTENT,)
 async def delete_chat_thread(
-    thread_id: str,
+    thread_id: UUID,
     user_id: Annotated[int, Header(alias="x-user-id")],
     service: ChatThreadService = Depends(get_chat_thread_service),
 ) -> Response:

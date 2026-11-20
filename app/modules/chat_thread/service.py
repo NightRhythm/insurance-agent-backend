@@ -1,8 +1,10 @@
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.chat_threads.exceptions import ChatThreadNotFound
-from app.modules.chat_threads.models import ChatThread
-from app.modules.chat_threads.repository import ChatThreadRepository
+from app.modules.chat_thread.exceptions import ChatThreadNotFound
+from app.modules.chat_thread.models import ChatThread
+from app.modules.chat_thread.repository import ChatThreadRepository
 
 
 class ChatThreadService:
@@ -34,7 +36,7 @@ class ChatThreadService:
 
     async def delete(
         self,
-        thread_id: str,
+        thread_id: UUID,
         user_id: int,
     ) -> None:
         async with self.session.begin():
